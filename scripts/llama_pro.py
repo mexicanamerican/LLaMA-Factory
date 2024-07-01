@@ -1,7 +1,7 @@
 # coding=utf-8
 # Copyright 2024 Tencent Inc. and the LlamaFactory team.
 #
-# This code is inspired by Tencent's LLaMA-Pro library.
+# This code is inspired by the Tencent's LLaMA-Pro library.
 # https://github.com/TencentARC/LLaMA-Pro/blob/main/scripts/block_expansion.py
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -120,7 +120,7 @@ def block_expansion(
             json.dump(index, f, indent=2, sort_keys=True)
         print("Model weights saved in {}".format(output_dir))
 
-    print("Fine-tune this model with:")
+    print("- Fine-tune this model with:")
     print("model_name_or_path: {}".format(output_dir))
     print("finetuning_type: freeze")
     print("freeze_trainable_layers: {}".format(num_expand))

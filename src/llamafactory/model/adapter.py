@@ -179,8 +179,16 @@ def _setup_lora_tuning(
         else:
             adapter_to_merge = model_args.adapter_name_or_path
 
+        init_kwargs = {
+            "subfolder": model_args.adapter_folder,
+            "offload_folder": model_args.offload_folder,
+            "cache_dir": model_args.cache_dir,
+            "revision": model_args.model_revision,
+            "token": model_args.hf_hub_token,
+        }
+
         for adapter in adapter_to_merge:
-            model: "LoraModel" = PeftModel.from_pretrained(model, adapter, offload_folder=model_args.offload_folder)
+            model: "LoraModel" = PeftModel.from_pretrained(model, adapter, **init_kwargs)
             model = model.merge_and_unload()
 
         if len(adapter_to_merge) > 0:
@@ -190,12 +198,7 @@ def _setup_lora_tuning(
             if model_args.use_unsloth:
                 model = load_unsloth_peft_model(config, model_args, is_trainable=is_trainable)
             else:
-                model = PeftModel.from_pretrained(
-                    model,
-                    adapter_to_resume,
-                    is_trainable=is_trainable,
-                    offload_folder=model_args.offload_folder,
-                )
+                model = PeftModel.from_pretrained(model, adapter_to_resume, is_trainable=is_trainable, **init_kwargs)
 
         logger.info("Loaded adapter(s): {}".format(",".join(model_args.adapter_name_or_path)))
 
@@ -242,6 +245,14 @@ def _setup_lora_tuning(
         if model_args.use_unsloth:
             model = get_unsloth_peft_model(model, model_args, peft_kwargs)
         else:
+            if finetuning_args.pissa_init:
+                if finetuning_args.pissa_iter == -1:
+                    logger.info("Using PiSSA initialization.")
+                    peft_kwargs["init_lora_weights"] = "pissa"
+                else:
+                    logger.info("Using PiSSA initialization with FSVD steps {}.".format(finetuning_args.pissa_iter))
+                    peft_kwargs["init_lora_weights"] = "pissa_niter_{}".format(finetuning_args.pissa_iter)
+
             lora_config = LoraConfig(
                 task_type=TaskType.CAUSAL_LM,
                 inference_mode=False,
@@ -270,14 +281,23 @@ def init_adapter(
 
     Note that the trainable parameters must be cast to float32.
     """
-    if is_trainable and getattr(model, "quantization_method", None) and finetuning_args.finetuning_type != "lora":
-        raise ValueError("Quantized models can only be used for the LoRA tuning.")
+    if is_trainable and getattr(model, "quantization_method", None) is not None:
+        if finetuning_args.finetuning_type != "lora":
+            raise ValueError("Quantized models can only be used for the LoRA tuning.")
 
+        if finetuning_args.pissa_init:
+            raise ValueError("Cannot initialize PiSSA adapter on quantized models.")
+
+    # cast trainable parameters to float32 if:
+    # 1. is_trainable and not pure_bf16 and not badam and quantization_bit is not None (qlora)
+    # 2. is_trainable and not pure_bf16 and not badam and not zero3 and not fsdp (zero3 or fsdp already in fp32)
+    cast_trainable_params_to_fp32 = False
     if not is_trainable:
-        cast_trainable_params_to_fp32 = False
-    elif is_deepspeed_zero3_enabled() or is_fsdp_enabled() or finetuning_args.pure_bf16 or finetuning_args.use_badam:
-        logger.info("ZeRO3/FSDP/PureBF16/BAdam detected, remaining trainable params as their original precision.")
-        cast_trainable_params_to_fp32 = False
+        pass
+    elif finetuning_args.pure_bf16 or finetuning_args.use_badam:
+        logger.info("Pure bf16 / BAdam detected, remaining trainable params in half precision.")
+    elif model_args.quantization_bit is None and (is_deepspeed_zero3_enabled() or is_fsdp_enabled()):
+        logger.info("ZeRO3 / FSDP detected, remaining trainable params in float32.")
     else:
         logger.info("Upcasting trainable params to float32.")
         cast_trainable_params_to_fp32 = True

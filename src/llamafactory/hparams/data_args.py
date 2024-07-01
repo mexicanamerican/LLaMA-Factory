@@ -1,6 +1,6 @@
 # Copyright 2024 HuggingFace Inc. and the LlamaFactory team.
 #
-# This code is inspired by HuggingFace's transformers library.
+# This code is inspired by the HuggingFace's transformers library.
 # https://github.com/huggingface/transformers/blob/v4.40.0/examples/pytorch/language-modeling/run_clm.py
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -44,10 +44,6 @@ class DataArguments:
     cutoff_len: int = field(
         default=1024,
         metadata={"help": "The cutoff length of the tokenized inputs in the dataset."},
-    )
-    reserved_label_len: int = field(
-        default=1,
-        metadata={"help": "The minimum cutoff length reserved for the tokenized labels in the dataset."},
     )
     train_on_prompt: bool = field(
         default=False,
@@ -101,15 +97,16 @@ class DataArguments:
             "help": "Whether or not to pack the sequences in training. Will automatically enable in pre-training."
         },
     )
+    tool_format: Optional[str] = field(
+        default=None,
+        metadata={"help": "Tool format to use for constructing function calling examples."},
+    )
     tokenized_path: Optional[str] = field(
         default=None,
         metadata={"help": "Path to save or load the tokenized datasets."},
     )
 
     def __post_init__(self):
-        if self.reserved_label_len >= self.cutoff_len:
-            raise ValueError("`reserved_label_len` must be smaller than `cutoff_len`.")
-
         if self.streaming and self.val_size > 1e-6 and self.val_size < 1:
             raise ValueError("Streaming mode should have an integer val size.")
 

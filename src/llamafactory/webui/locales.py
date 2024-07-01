@@ -85,15 +85,29 @@ LOCALES = {
     "quantization_bit": {
         "en": {
             "label": "Quantization bit",
-            "info": "Enable 4/8-bit model quantization (QLoRA).",
+            "info": "Enable quantization (QLoRA).",
         },
         "ru": {
             "label": "Уровень квантования",
-            "info": "Включить 4/8-битное квантование модели (QLoRA).",
+            "info": "Включить квантование (QLoRA).",
         },
         "zh": {
             "label": "量化等级",
-            "info": "启用 4/8 比特模型量化（QLoRA）。",
+            "info": "启用量化（QLoRA）。",
+        },
+    },
+    "quantization_method": {
+        "en": {
+            "label": "Quantization method",
+            "info": "Quantization algorithm to use.",
+        },
+        "ru": {
+            "label": "Метод квантования",
+            "info": "Алгоритм квантования, который следует использовать.",
+        },
+        "zh": {
+            "label": "量化方法",
+            "info": "使用的量化算法。",
         },
     },
     "template": {
@@ -732,6 +746,20 @@ LOCALES = {
             "info": "使用权重分解的 LoRA。",
         },
     },
+    "use_pissa": {
+        "en": {
+            "label": "Use PiSSA",
+            "info": "Use PiSSA method.",
+        },
+        "ru": {
+            "label": "используйте PiSSA",
+            "info": "Используйте метод PiSSA.",
+        },
+        "zh": {
+            "label": "使用 PiSSA",
+            "info": "使用 PiSSA 方法。",
+        },
+    },
     "lora_target": {
         "en": {
             "label": "LoRA modules (optional)",
@@ -1190,6 +1218,17 @@ LOCALES = {
         },
         "zh": {
             "label": "推理引擎",
+        },
+    },
+    "infer_dtype": {
+        "en": {
+            "label": "Inference data type",
+        },
+        "ru": {
+            "label": "Тип данных для вывода",
+        },
+        "zh": {
+            "label": "推理数据类型",
         },
     },
     "load_btn": {
