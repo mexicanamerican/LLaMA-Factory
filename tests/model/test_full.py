@@ -1,4 +1,4 @@
-# Copyright 2024 the LlamaFactory team.
+# Copyright 2025 the LlamaFactory team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,11 +16,10 @@ import os
 
 import torch
 
-from llamafactory.hparams import get_infer_args, get_train_args
-from llamafactory.model import load_model, load_tokenizer
+from llamafactory.train.test_utils import load_infer_model, load_train_model
 
 
-TINY_LLAMA = os.environ.get("TINY_LLAMA", "llamafactory/tiny-random-Llama-3")
+TINY_LLAMA = os.getenv("TINY_LLAMA", "llamafactory/tiny-random-Llama-3")
 
 TRAIN_ARGS = {
     "model_name_or_path": TINY_LLAMA,
@@ -31,7 +30,6 @@ TRAIN_ARGS = {
     "dataset_dir": "ONLINE",
     "template": "llama3",
     "cutoff_len": 1024,
-    "overwrite_cache": True,
     "output_dir": "dummy_dir",
     "overwrite_output_dir": True,
     "fp16": True,
@@ -46,18 +44,14 @@ INFER_ARGS = {
 
 
 def test_full_train():
-    model_args, _, _, finetuning_args, _ = get_train_args(TRAIN_ARGS)
-    tokenizer_module = load_tokenizer(model_args)
-    model = load_model(tokenizer_module["tokenizer"], model_args, finetuning_args, is_trainable=True)
+    model = load_train_model(**TRAIN_ARGS)
     for param in model.parameters():
         assert param.requires_grad is True
         assert param.dtype == torch.float32
 
 
 def test_full_inference():
-    model_args, _, finetuning_args, _ = get_infer_args(INFER_ARGS)
-    tokenizer_module = load_tokenizer(model_args)
-    model = load_model(tokenizer_module["tokenizer"], model_args, finetuning_args, is_trainable=False)
+    model = load_infer_model(**INFER_ARGS)
     for param in model.parameters():
         assert param.requires_grad is False
         assert param.dtype == torch.float16

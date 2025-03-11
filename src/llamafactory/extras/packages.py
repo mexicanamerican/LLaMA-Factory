@@ -1,6 +1,6 @@
 # Copyright 2024 HuggingFace Inc. and the LlamaFactory team.
 #
-# This code is inspired by HuggingFace's transformers library.
+# This code is inspired by the HuggingFace's transformers library.
 # https://github.com/huggingface/transformers/blob/v4.40.0/src/transformers/utils/import_utils.py
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,12 +38,24 @@ def _get_package_version(name: str) -> "Version":
         return version.parse("0.0.0")
 
 
+def is_pyav_available():
+    return _is_package_available("av")
+
+
+def is_librosa_available():
+    return _is_package_available("librosa")
+
+
 def is_fastapi_available():
     return _is_package_available("fastapi")
 
 
 def is_galore_available():
     return _is_package_available("galore_torch")
+
+
+def is_apollo_available():
+    return _is_package_available("apollo_torch")
 
 
 def is_gradio_available():
@@ -58,6 +70,10 @@ def is_pillow_available():
     return _is_package_available("PIL")
 
 
+def is_ray_available():
+    return _is_package_available("ray")
+
+
 def is_requests_available():
     return _is_package_available("requests")
 
@@ -70,14 +86,14 @@ def is_starlette_available():
     return _is_package_available("sse_starlette")
 
 
+@lru_cache
+def is_transformers_version_greater_than(content: str):
+    return _get_package_version("transformers") >= version.parse(content)
+
+
 def is_uvicorn_available():
     return _is_package_available("uvicorn")
 
 
 def is_vllm_available():
     return _is_package_available("vllm")
-
-
-@lru_cache
-def is_vllm_version_greater_than_0_5():
-    return _get_package_version("vllm") >= version.parse("0.5.0")

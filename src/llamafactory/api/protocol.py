@@ -1,4 +1,4 @@
-# Copyright 2024 the LlamaFactory team.
+# Copyright 2025 the LlamaFactory team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -96,7 +96,7 @@ class ChatCompletionRequest(BaseModel):
     model: str
     messages: List[ChatMessage]
     tools: Optional[List[FunctionAvailable]] = None
-    do_sample: bool = True
+    do_sample: Optional[bool] = None
     temperature: Optional[float] = None
     top_p: Optional[float] = None
     n: int = 1
